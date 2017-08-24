@@ -1,4 +1,4 @@
-# Basic multiauth integration#
+# Basic multiauth integration #
 Goal: use another user table to implement backend access, it assumes that make:auth was executed already
 
 ### Just if user table doesn't exist ###
@@ -29,6 +29,8 @@ class Admin extends Authenticatable
     ];
 
 }
+## Execute commands ##
+After copy contente of each file in this repo
 
 php artisan make:controller Admin/HomeController
 
