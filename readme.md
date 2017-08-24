@@ -8,7 +8,7 @@ php artisan migrate:install
 // Create Tables sctructure
 php artisan migrate
 
-## Create files controllers, Middleware, Model##
+## Create files controllers, Middleware, Model ##
 
 php artisan make:model Admin
 // It has to look like as follow
