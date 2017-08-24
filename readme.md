@@ -1,27 +1,183 @@
-# Laravel PHP Framework
+# Basic multiauth integration#
+Goal: use another user table to implement backend access, it assumes that make:auth was executed already
 
-[![Build Status](https://travis-ci.org/laravel/framework.svg)](https://travis-ci.org/laravel/framework)
-[![Total Downloads](https://poser.pugx.org/laravel/framework/d/total.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/framework/v/stable.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/framework/v/unstable.svg)](https://packagist.org/packages/laravel/framework)
-[![License](https://poser.pugx.org/laravel/framework/license.svg)](https://packagist.org/packages/laravel/framework)
+### Just if user table doesn't exist ###
+php artisan make:migration create_user_table --create
+// Add table sctructure
+php artisan migrate:install
+// Create Tables sctructure
+php artisan migrate
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as authentication, routing, sessions, queueing, and caching.
+## Create files controllers, Middleware, Model##
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications. A superb inversion of control container, expressive migration system, and tightly integrated unit testing support give you the tools you need to build any application with which you are tasked.
+php artisan make:model Admin
+// It has to look like as follow
 
-## Official Documentation
+namespace App;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+class Admin extends Authenticatable
+{
+    protected $table="user";
+    protected $primaryKey="userid";
+    protected $guard = "admin";
 
-Documentation for the framework can be found on the [Laravel website](http://laravel.com/docs).
+    protected $fillable = [
+        'name', 'email', 'password',
+    ];
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
 
-## Contributing
+}
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
+php artisan make:controller Admin/HomeController
 
-## Security Vulnerabilities
+php artisan make:controller Admin/AuthController
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+php artisan make:controller Admin/PasswordController
 
-## License
+php artisan make:middleware AdminAuthenticate
 
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+php artisan make:middleware AdminRedirectIfAuthenticated
+
+Create File config/admin.php
+
+return [
+	/**
+	 * Define your admin url prefix here.
+	 */
+	'url' => 'admin/'
+];
+
+Modify config/auth.php:
+
+    'defaults' => [
+        'guard' => 'web',
+        'passwords' => 'users',
+    ],
+
+    'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        'api' => [
+            'driver' => 'token',
+            'provider' => 'users',
+        ],
+
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
+    ],
+
+    'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\User::class,
+        ],
+
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => \App\Admin::class,
+        ],
+
+
+    'passwords' => [
+        'users' => [
+            'provider' => 'users',
+            'email' => 'auth.emails.password',
+            'table' => 'password_resets',
+            'expire' => 60,
+        ],
+        'admins' => [
+            'provider' => 'admins',
+            'email'    => 'admin.auth.emails.password',
+            'table'    => 'password_resets',
+            'expire'   => 60,
+        ],
+    ],
+
+];
+
+
+
+add in Kernel in $routeMiddleware:
+
+      'admin.auth'  => \App\Http\Middleware\AdminAuthenticate::class,
+      'admin.guest' => \App\Http\Middleware\AdminRedirectIfAuthenticated::class,
+
+
+Create healper whith this usefull admin verifications app/helper.php :
+
+if (! function_exists('admin') )
+{
+	/**
+	 * Returns the admin session instance
+	 *
+	 * @return  mixed
+	 */
+	function admin()
+	{
+		return auth()->guard('admin')->user();
+	}
+}
+
+if (! function_exists('isAdminLoggedIn') )
+{
+	/**
+	 * Determines if admin is logged in.
+	 *
+	 * @return boolean  True if admin logged in, False otherwise.
+	 */
+	function isAdminLoggedIn()
+	{
+		return auth()->guard('admin')->check();
+	}
+}
+
+
+Add Helper.php in composer.json
+
+"autoload": {
+     "classmap": [
+         "database"
+     ],
+     "psr-4": {
+         "App\\": "app/"
+     },
+   "files":[
+     "app/helper.php"
+   ]
+ },
+
+
+
+composer dump-autoload
+
+php artisan cache:clear
+
+
+##routes##
+// Admin Authentication Routes...
+Route::group(['prefix' => config('admin.url')], function() {
+    Route::group(['middleware' => 'admin.auth'], function() {
+        Route::get('/', ['as' => 'admin', 'uses' => 'Admin\HomeController@index']);
+        Route::get('/home', ['as' => 'admin', 'uses' => 'Admin\HomeController@index']);
+        Route::get('logout', ['as' => 'admin.logout', 'uses' => 'Admin\AuthController@logout']);
+    });
+
+    Route::group(['middleware' => 'admin.guest'], function() {
+
+        // Authentication Routes...
+        Route::get('login', ['as' => 'admin.login', 'uses' => 'Admin\AuthController@showLoginForm']);
+        Route::post('login', ['as' => 'admin.login.post', 'uses' => 'Admin\AuthController@login']);
+
+        // Password Reset Routes...
+        Route::get('password/reset/{token?}', ['as' => 'admin.password.reset', 'uses' => 'Admin\PasswordController@showResetForm']);
+        Route::post('password/email', ['as' => 'admin.password.email', 'uses' => 'Admin\PasswordController@sendResetLinkEmail']);
+        Route::post('password/reset', ['as' => 'admin.password.post', 'uses' => 'Admin\PasswordController@reset']);
+    });
+});
