@@ -8,12 +8,15 @@ php artisan make:migration create_user_table --create
 php artisan migrate:install
 // Create Tables sctructure
 php artisan migrate
-``
+```
 
 ## Create files controllers, Middleware, Model ##
 ```
 php artisan make:model Admin
-// It has to look like as follow
+```
+It has to look like as follow
+```php
+
 namespace App;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 class Admin extends Authenticatable
