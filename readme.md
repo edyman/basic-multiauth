@@ -8,13 +8,12 @@ php artisan make:migration create_user_table --create
 php artisan migrate:install
 // Create Tables sctructure
 php artisan migrate
-```
+``
 
 ## Create files controllers, Middleware, Model ##
-
+```
 php artisan make:model Admin
 // It has to look like as follow
-
 namespace App;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 class Admin extends Authenticatable
@@ -22,7 +21,6 @@ class Admin extends Authenticatable
     protected $table="user";
     protected $primaryKey="userid";
     protected $guard = "admin";
-
     protected $fillable = [
         'name', 'email', 'password',
     ];
@@ -31,9 +29,12 @@ class Admin extends Authenticatable
     ];
 
 }
-## Execute commands ##
-After copy contente of each file in this repo
+```
 
+## Execute commands ##
+
+After create them, copy the content of each file in this repo
+``
 php artisan make:controller Admin/HomeController
 
 php artisan make:controller Admin/AuthController
@@ -43,18 +44,20 @@ php artisan make:controller Admin/PasswordController
 php artisan make:middleware AdminAuthenticate
 
 php artisan make:middleware AdminRedirectIfAuthenticated
+```
 
-Create File config/admin.php
-
+### Create File config/admin.php ###
+```
 return [
 	/**
 	 * Define your admin url prefix here.
 	 */
 	'url' => 'admin/'
 ];
+```
 
-Modify config/auth.php:
-
+### Modify config/auth.php: ###
+```
     'defaults' => [
         'guard' => 'web',
         'passwords' => 'users',
@@ -106,16 +109,17 @@ Modify config/auth.php:
 
 ];
 
+``
 
-
-add in Kernel in $routeMiddleware:
-
+### add in Kernel in $routeMiddleware:
+```php
       'admin.auth'  => \App\Http\Middleware\AdminAuthenticate::class,
       'admin.guest' => \App\Http\Middleware\AdminRedirectIfAuthenticated::class,
+```
 
+## Create healper whith this usefull admin verifications app/helper.php :##
 
-Create healper whith this usefull admin verifications app/helper.php :
-
+```php
 if (! function_exists('admin') )
 {
 	/**
@@ -141,10 +145,11 @@ if (! function_exists('isAdminLoggedIn') )
 		return auth()->guard('admin')->check();
 	}
 }
+```
 
+### Add Helper.php in composer.json ###
 
-Add Helper.php in composer.json
-
+```
 "autoload": {
      "classmap": [
          "database"
@@ -156,15 +161,20 @@ Add Helper.php in composer.json
      "app/helper.php"
    ]
  },
+``
 
+### Final commands ###
 
-
+```
 composer dump-autoload
 
 php artisan cache:clear
 
+```
 
-##routes##
+### Add Routes for admin access ###
+
+```
 // Admin Authentication Routes...
 Route::group(['prefix' => config('admin.url')], function() {
     Route::group(['middleware' => 'admin.auth'], function() {
@@ -185,3 +195,4 @@ Route::group(['prefix' => config('admin.url')], function() {
         Route::post('password/reset', ['as' => 'admin.password.post', 'uses' => 'Admin\PasswordController@reset']);
     });
 });
+```
