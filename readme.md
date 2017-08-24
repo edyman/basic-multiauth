@@ -34,7 +34,7 @@ class Admin extends Authenticatable
 ## Execute commands ##
 
 After create them, copy the content of each file in this repo
-``
+```
 php artisan make:controller Admin/HomeController
 
 php artisan make:controller Admin/AuthController
@@ -109,7 +109,7 @@ return [
 
 ];
 
-``
+```
 
 ### add in Kernel in $routeMiddleware:
 ```php
@@ -161,7 +161,7 @@ if (! function_exists('isAdminLoggedIn') )
      "app/helper.php"
    ]
  },
-``
+```
 
 ### Final commands ###
 
