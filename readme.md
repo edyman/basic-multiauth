@@ -2,11 +2,13 @@
 Goal: use another user table to implement backend access, it assumes that make:auth was executed already
 
 ### Just if user table doesn't exist ###
+```
 php artisan make:migration create_user_table --create
 // Add table sctructure
 php artisan migrate:install
 // Create Tables sctructure
 php artisan migrate
+```
 
 ## Create files controllers, Middleware, Model ##
 
