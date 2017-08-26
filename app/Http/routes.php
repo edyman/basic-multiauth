@@ -16,7 +16,7 @@ Route::get('/', function () {
 });
 
 // Admin Authentication Routes...
-Route::group(['prefix' => config('admin.url')], function() {
+/*Route::group(['prefix' => config('admin.url')], function() {
     Route::group(['middleware' => 'admin.auth'], function() {
         Route::get('/', ['as' => 'admin', 'uses' => 'Admin\HomeController@index']);
         Route::get('/home', ['as' => 'admin', 'uses' => 'Admin\HomeController@index']);
@@ -34,4 +34,4 @@ Route::group(['prefix' => config('admin.url')], function() {
         Route::post('password/email', ['as' => 'admin.password.email', 'uses' => 'Admin\PasswordController@sendResetLinkEmail']);
         Route::post('password/reset', ['as' => 'admin.password.post', 'uses' => 'Admin\PasswordController@reset']);
     });
-});
+});*/
