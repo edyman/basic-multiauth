@@ -46,10 +46,6 @@ return [
             'provider' => 'users',
         ],
 
-      /*  'admin' => [
-            'driver' => 'session',
-            'provider' => 'admins',
-        ],*/
     ],
 
     /*
@@ -74,16 +70,6 @@ return [
             'driver' => 'eloquent',
             'model' => App\User::class,
         ],
-
-      /*  'admins' => [
-            'driver' => 'eloquent',
-            'model' => \Modules\Admin\Entities\Admin::class,
-        ],*/
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*
@@ -104,7 +90,6 @@ return [
     | they have less time to be guessed. You may change this as needed.
     |
     */
-
     'passwords' => [
         'users' => [
             'provider' => 'users',
@@ -112,12 +97,6 @@ return [
             'table' => 'password_resets',
             'expire' => 60,
         ],
-        /*'admins' => [
-            'provider' => 'admins',
-            'email'    => 'admin.auth.emails.password',
-            'table'    => 'password_resets',
-            'expire'   => 60,
-        ],*/
     ],
 
 ];
