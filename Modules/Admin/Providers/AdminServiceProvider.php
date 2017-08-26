@@ -4,6 +4,7 @@ namespace Modules\Admin\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Modules\Admin\Entities\Admin;
 
 class AdminServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,7 @@ class AdminServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->registerFactories();
+        $this->registerAuthConfig();
     }
 
     /**
@@ -107,5 +109,29 @@ class AdminServiceProvider extends ServiceProvider
     public function provides()
     {
         return [];
+    }
+
+    public function registerAuthConfig()
+    {
+        $config = $this->app['config']['auth'];
+
+        $config['guards']['admin'] = [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ];
+
+        $config['providers']['admins'] = [
+            'driver' => 'eloquent',
+            'model' => Admin::class,
+        ];
+
+        $config['passwords']['admins'] = [
+            'provider' => 'admins',
+            'email'    => 'admin.auth.emails.password',
+            'table'    => 'password_resets',
+            'expire'   => 60,
+        ];
+
+        $this->app['config']['auth'] = $config;
     }
 }
