@@ -1,4 +1,6 @@
 # Basic multiauth integration #
+test
+
 Goal: use another user table to implement backend access, it assumes that make:auth was executed already
 
 ### Just if user table doesn't exist ###
